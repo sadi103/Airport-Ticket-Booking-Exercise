@@ -1,5 +1,5 @@
 ﻿using FTS.AirportTicketBookingExercise;
 
 
-Utilities.ImportFlights();
-Utilities.ShowMainMenu();
+var app = new ApplicationRunner();
+app.Run();

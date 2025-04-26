@@ -7,24 +7,42 @@ namespace FTS.AirportTicketBookingExercise.UserManagement
     {
         public Guid Id { get; private set; } = Guid.NewGuid();
 
-        private readonly List<Booking> _bookings = [];
+        #region Instance Methods
+        public List<Booking>? GetBookings()
+        {
+            return BookingRepository.GetAllBookings()?.Where(booking => booking.PassengerId == Id).ToList();
+        }
 
         public bool TryBookFlight(Flight flight, FlightClass flightClass)
         {
-            if (! _bookings.Any(booking => booking.FlightId == flight.Id))
-            {
-                var booking = new Booking(Id, flight.Id, flightClass);
-                BookingRepository.SaveBooking(booking);
+            var previousBookings = GetBookings();
 
-                _bookings.Add(booking);
+            if (previousBookings is null || !(previousBookings.Any(booking => booking.FlightId == flight.Id)))
+            {
+                var finalPrice = flight.Price + (int)flightClass;
+
+                var booking = new Booking(Id, flight.Id, finalPrice, flightClass);
+                BookingRepository.SaveBooking(booking);
 
                 return true;
             }
             else
             {
-                Console.WriteLine("You already have a ticket of this flight\n");
+                Console.WriteLine("\nYou already have a ticket of this flight");
                 return false;
             }
+        }
+        #endregion
+
+        #region Static Methods
+        public static bool TryRemoveBooking(Guid bookingId)
+        {
+            return BookingRepository.RemoveBooking(bookingId);
+        }
+
+        public static bool TryModifyBooking(Guid bookingId, decimal newPrice, FlightClass newClass)
+        {
+            return BookingRepository.ModifyBooking(bookingId, newPrice, newClass);
         }
 
         public static List<Flight>? SearchFlights(Dictionary<string, string> searchParameters)
@@ -84,10 +102,6 @@ namespace FTS.AirportTicketBookingExercise.UserManagement
 
             return filteredFlights;
         }
-
-        public override string ToString()
-        {
-            return $"Passenger {{ Id = {Id} }}";
-        }
+        #endregion
     }
 }

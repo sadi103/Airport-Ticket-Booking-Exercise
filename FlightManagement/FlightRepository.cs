@@ -9,25 +9,42 @@
         {
             if (!File.Exists(FLIGHTS_PATH))
             {
-                Console.WriteLine("File doesn't exist");
+                Console.WriteLine("\nFile doesn't exist");
                 return;
             }
 
+            Console.WriteLine("\nUploading the flights...");
+
             AvailableFlights.Clear(); // Avoid duplicate entries if this method is called twice accedently
 
-            string[] flightsAsString = File.ReadAllLines(FLIGHTS_PATH);
+            var flightsAsString = File.ReadAllLines(FLIGHTS_PATH);
 
-            foreach (var line in flightsAsString)
+            for (int i = 0; i < flightsAsString.Length; i++)
             {
-                var flightSplit = line.Split(',');
+                var line = flightsAsString[i];
 
-                bool success = decimal.TryParse(flightSplit[2], out decimal price);
+                var flightSplit = line.Split(',').Select(x => x.Trim()).ToArray();
+
+                if (flightSplit.Length < 7)
+                {
+                    Console.WriteLine($"Skipping malformed line no. {i + 1}");
+                    continue;
+                }
+
+                bool success = Guid.TryParse(flightSplit[0], out Guid flightId);
+                if (! success)
+                {
+                    Console.WriteLine($"\nWarning: skipping line no. {i + 1} with malformed flight id");
+                    continue;
+                }
+                    
+                success = decimal.TryParse(flightSplit[3], out decimal price);
                 if (!success)
                 {
                     price = 100M;
                 }
 
-                success = DateTime.TryParse(flightSplit[3], out DateTime date);
+                success = DateTime.TryParse(flightSplit[4], out DateTime date);
                 if (!success)
                 {
                     var oneWeekLater = DateTime.Now.AddDays(7);
@@ -43,16 +60,19 @@
 
                 var flight = new Flight()
                 {
-                    DepartureCountry = flightSplit[0],
-                    DestinationCountry = flightSplit[1],
+                    Id = flightId,
+                    DepartureCountry = flightSplit[1],
+                    DestinationCountry = flightSplit[2],
                     Price = price,
                     DepartureDate = date,
-                    DepartureAirport = flightSplit[4],
-                    ArrivalAirport = flightSplit[5]
+                    DepartureAirport = flightSplit[5],
+                    ArrivalAirport = flightSplit[6]
                 };
 
                 AvailableFlights.Add(flight);
             }
+
+            Console.WriteLine("Successfully loaded the flights data.");
         }
     }
 }
