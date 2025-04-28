@@ -1,4 +1,6 @@
-﻿namespace FTS.AirportTicketBookingExercise.FlightManagement
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace FTS.AirportTicketBookingExercise.FlightManagement
 {
     public static class FlightRepository
     {
@@ -41,21 +43,15 @@
                 success = decimal.TryParse(flightSplit[3], out decimal price);
                 if (!success)
                 {
-                    price = 100M;
+                    Console.WriteLine($"\nWarning: skipping line no. {i + 1} with malformed flight price");
+                    continue;
                 }
 
                 success = DateTime.TryParse(flightSplit[4], out DateTime date);
                 if (!success)
                 {
-                    var oneWeekLater = DateTime.Now.AddDays(7);
-                    date = new DateTime(
-                        oneWeekLater.Year,
-                        oneWeekLater.Month,
-                        oneWeekLater.Day,
-                        oneWeekLater.Hour,
-                        0,
-                        0
-                    );
+                    Console.WriteLine($"\nWarning: skipping line no. {i + 1} with malformed flight date");
+                    continue;
                 }
 
                 var flight = new Flight()
@@ -68,6 +64,9 @@
                     DepartureAirport = flightSplit[5],
                     ArrivalAirport = flightSplit[6]
                 };
+
+                var context = new ValidationContext(flight);
+                Validator.ValidateObject(flight, context, validateAllProperties: true);
 
                 AvailableFlights.Add(flight);
             }

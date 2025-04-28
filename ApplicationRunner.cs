@@ -68,9 +68,8 @@ namespace FTS.AirportTicketBookingExercise
                     What would you like to do
                     1. Filter Bookings
                     2. Batch Flight Upload
-                    3. Validate Flight Data
-                    4. Dynamically Validate Flight Model
-                    5. Return to Main Menu
+                    3. Dynamically Validate Flight Model
+                    4. Return to Main Menu
                     Your Selection: 
                     """
                 );
@@ -82,15 +81,15 @@ namespace FTS.AirportTicketBookingExercise
                 switch (userChoice)
                 {
                     case "1":
-                        throw new NotImplementedException();
+                        FilterBookings();
+                        break;
                     case "2":
                         Manager.UploadFlights();
                         break;
                     case "3":
-                        throw new NotImplementedException();
+                        Manager.ValidateFlightModel();
+                        break;
                     case "4":
-                        throw new NotImplementedException();
-                    case "5":
                         return;
                 }
             }
@@ -132,6 +131,48 @@ namespace FTS.AirportTicketBookingExercise
                         return;
                 }
             } while (true);
+        }
+
+        private static void FilterBookings()
+        {
+            var searchParameters = new Dictionary<string, string>();
+
+            Console.Write("\nEnter departure country: ");
+            AddIfNotNull(searchParameters, "DepartureCountry", Console.ReadLine());
+
+            Console.Write("Enter destination country: ");
+            AddIfNotNull(searchParameters, "DestinationCountry", Console.ReadLine());
+
+            Console.Write("Enter booking price: ");
+            AddIfNotNull(searchParameters, "Price", Console.ReadLine());
+
+            Console.Write("Enter departure airport: ");
+            AddIfNotNull(searchParameters, "DepartureAirport", Console.ReadLine());
+
+            Console.Write("Enter arrival airport: ");
+            AddIfNotNull(searchParameters, "ArrivalAirport", Console.ReadLine());
+
+            Console.Write("""Enter departure date (in "yyyy-mm-dd hh:mm" format): """);
+            AddIfNotNull(searchParameters, "DepartureDate", Console.ReadLine());
+            
+            Console.Write("Enter booking class: ");
+            AddIfNotNull(searchParameters, "Class", Console.ReadLine());
+
+
+            var filteredBookings = Manager.SearchBookings(searchParameters);
+
+            Console.WriteLine("\nSearch Results:");
+
+            if (filteredBookings is null || filteredBookings.Count == 0)
+            {
+                Console.WriteLine("\nNo bookingss found that match your search");
+                return;
+            }
+
+            for (int i = 0; i < filteredBookings.Count; i++)
+            {
+                Console.WriteLine($"\n{i + 1}: {filteredBookings[i]}");
+            }
         }
 
         private void BookFlight()
